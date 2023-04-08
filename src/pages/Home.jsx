@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Loading from '../components/Loading';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as yup from 'yup';
+
+const postSchema = yup.object().shape({
+  title: yup.string().required('This Field is required'),
+  body: yup.string().required().min(30, 'too short').max(200, 'too long'),
+  phoneNumber: yup.string().matches('^\\+964\\d{10}$', 'wrong'),
+});
 
 function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
 
   const fetchData = () => {
     axios
@@ -35,26 +41,6 @@ function Home() {
     fetchData();
   };
 
-  const handleTitle = (event) => {
-    setTitle(event.target.value);
-  };
-
-  const handleBody = (e) => {
-    setBody(e.target.value);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    axios
-      .post('https://jsonplaceholder.typicode.com/posts', {
-        title,
-        body,
-      })
-      .then((response) => {
-        fetchData();
-      });
-  };
-
   return (
     <main style={{ backgroundColor: 'white' }}>
       <h1>Home</h1>
@@ -69,23 +55,34 @@ function Home() {
             <div>
               <div>
                 <h1>Add Post</h1>
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type='text'
-                    value={title}
-                    name='title'
-                    onChange={handleTitle}
-                    placeholder='Name'
-                  />
-                  <input
-                    type='text'
-                    value={body}
-                    onChange={handleBody}
-                    name='body'
-                    placeholder='Body'
-                  />
-                  <button type='submit'>Submit</button>
-                </form>
+                <Formik
+                  validationSchema={postSchema}
+                  initialValues={{ title: '', body: '', phoneNumber: '' }}
+                  onSubmit={(values) => {
+                    axios
+                      .post('https://jsonplaceholder.typicode.com/posts', {
+                        ...values,
+                      })
+                      .then((response) => {
+                        fetchData();
+                      });
+                  }}
+                >
+                  {({ errors, touched }) => (
+                    <Form>
+                      <Field type='text' name='title' />
+                      <ErrorMessage name='title' />
+
+                      <Field type='text' name='body' />
+                      <ErrorMessage name='body' component='div' />
+
+                      <Field type='text' name='phoneNumber' />
+                      <ErrorMessage name='body' component='div' />
+
+                      <button type='submit'>Submit</button>
+                    </Form>
+                  )}
+                </Formik>
               </div>
               {posts &&
                 posts.map((post, i) => (
