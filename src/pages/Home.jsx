@@ -10,7 +10,7 @@ const postSchema = yup.object().shape({
   phoneNumber: yup.string().matches('^\\+964\\d{10}$', 'wrong'),
 });
 
-function Home() {
+export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -98,5 +98,3 @@ function Home() {
     </main>
   );
 }
-
-export default Home;
